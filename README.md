@@ -1,5 +1,5 @@
-# SNEEK ✳
-### Eat color. Cause chaos.
+# Sneek
+### A different kind of Snake.
 
 **[PLAY SNEEK →](https://joramvanloenen.github.io/Sneek/)**
 
@@ -12,8 +12,9 @@ SNEEK is a colorful, physics-flavored reinvention of classic Snake. Grow a long 
 - **Three autonomous NPCs.** **NIBBLE** seeks food, **BYTE** stalks the player, and **ZIG** competes for pickups and occasionally harasses you. Their local steering logic includes predictive pursuit, avoidance, collision response and goal changes. No cloud service needed.
 - **Power-ups.** Magnet attracts orbs. Ghost lets you phase through danger. Hyper adds speed. Shield heals and grants brief invulnerability.
 - **Endless waves.** Rivals become quicker over time. Knock them out to earn points and energy; they respawn.
-- **Unmistakable player.** Your snake always has a lime-green head, white outline, glowing locator ring and floating **YOU** label, even while collecting other colors.
-- **Clear game feedback.** Positive actions show green banners, point callouts, particles and rewarding sounds; collisions, stolen pickups and empty boosts trigger red warnings, flashes and distinct sounds.
+- **Unmistakable player.** Your snake always has a green head, light outline, subtle locator ring and floating **YOU** label, even while collecting other colors.
+- **Clear feedback without blocking play.** Successes and mistakes appear in a dedicated status strip **above** the arena, including on small screens. Positive actions use muted green, mistakes use red; the canvas retains point callouts, collision flashes and sounds.
+- **Simplified visual style.** Flat, readable sprites, soft color palette, understated canvas grid, compact HUD and uncluttered controls.
 - **Browser-first.** On-screen drag joystick (mouse/touch), optional mouse aiming and keyboard movement, mobile boost, responsive canvas, synthesized sound, pause, restart and a personal best saved with localStorage. No tracking, accounts, databases or build tools.
 
 ## Controls
@@ -23,8 +24,8 @@ SNEEK is a colorful, physics-flavored reinvention of classic Snake. Grow a long 
 | Steer | On-screen joystick, mouse, WASD or arrow keys | Drag the on-screen joystick |
 | Boost | Hold Space | Hold the BOOST button |
 | Pause / resume | P or Escape | PAUSE button |
-| Restart | R / Enter after game over | ONE MORE ROUND button |
-| Sound | SOUND button | SOUND button |
+| Restart | R / Enter after game over | Play again button |
+| Sound | Sound button | Sound button |
 
 ## Run locally
 
