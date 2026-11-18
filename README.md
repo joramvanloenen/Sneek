@@ -12,13 +12,15 @@ SNEEK is a colorful, physics-flavored reinvention of classic Snake. Grow a long 
 - **Three autonomous NPCs.** **NIBBLE** seeks food, **BYTE** stalks the player, and **ZIG** competes for pickups and occasionally harasses you. Their local steering logic includes predictive pursuit, avoidance, collision response and goal changes. No cloud service needed.
 - **Power-ups.** Magnet attracts orbs. Ghost lets you phase through danger. Hyper adds speed. Shield heals and grants brief invulnerability.
 - **Endless waves.** Rivals become quicker over time. Knock them out to earn points and energy; they respawn.
-- **Browser-first.** Desktop and mobile inputs, responsive canvas, synthesized sound, pause, restart and a personal best saved with localStorage. No tracking, accounts, databases or build tools.
+- **Unmistakable player.** Your snake always has a lime-green head, white outline, glowing locator ring and floating **YOU** label, even while collecting other colors.
+- **Clear game feedback.** Positive actions show green banners, point callouts, particles and rewarding sounds; collisions, stolen pickups and empty boosts trigger red warnings, flashes and distinct sounds.
+- **Browser-first.** On-screen drag joystick (mouse/touch), optional mouse aiming and keyboard movement, mobile boost, responsive canvas, synthesized sound, pause, restart and a personal best saved with localStorage. No tracking, accounts, databases or build tools.
 
 ## Controls
 
 | Action | Desktop | Touch |
 | --- | --- | --- |
-| Steer | Mouse, WASD or arrow keys | Touch and drag on the arena |
+| Steer | On-screen joystick, mouse, WASD or arrow keys | Drag the on-screen joystick |
 | Boost | Hold Space | Hold the BOOST button |
 | Pause / resume | P or Escape | PAUSE button |
 | Restart | R / Enter after game over | ONE MORE ROUND button |
