@@ -9,15 +9,15 @@
   const ctx = canvas.getContext('2d', { alpha: false });
   const arena = $('arena');
   const C = {
-    coral: { hex: '#ff668d', soft: '#ffb1c5', label: 'CORAL' },
-    cyan: { hex: '#55e9e1', soft: '#b4fff9', label: 'CYAN' },
-    yellow: { hex: '#ffd36b', soft: '#ffedbd', label: 'GOLD' }
+    coral: { hex: '#df867a', soft: '#f0c0b8', label: 'CORAL' },
+    cyan: { hex: '#80bec4', soft: '#c0e0e2', label: 'CYAN' },
+    yellow: { hex: '#e2bf77', soft: '#f4e2b6', label: 'GOLD' }
   };
   const PALETTE = ['coral', 'cyan', 'yellow'];
   const BOTS = [
-    { name: 'NIBBLE', color: '#b69aff', type: 'forager', speed: 118, length: 13 },
-    { name: 'BYTE', color: '#ff9466', type: 'hunter', speed: 128, length: 15 },
-    { name: 'ZIG', color: '#74ff9f', type: 'trickster', speed: 122, length: 11 }
+    { name: 'NIBBLE', color: '#a99bc4', type: 'forager', speed: 118, length: 13 },
+    { name: 'BYTE', color: '#d78e71', type: 'hunter', speed: 128, length: 15 },
+    { name: 'ZIG', color: '#7bb7c1', type: 'trickster', speed: 122, length: 11 }
   ];
   const POWER = {
     magnet: { name: 'MAGNET', color: '#55e9e1', symbol: '◎', duration: 9 },
@@ -152,7 +152,7 @@
     buffs = { magnet: 0, phase: 0, rush: 0 };
     foods = []; pickups = []; wells = []; particles = []; rings = []; floats = [];
     const cx = WORLD.w / 2, cy = WORLD.h / 2;
-    player = makeSnake('YOU', cx * .78, cy * 1.06, -.35, '#d6ff59', 'player', 14, 147);
+    player = makeSnake('YOU', cx * .78, cy * 1.06, -.35, '#bbd86d', 'player', 14, 147);
     bots = BOTS.map((def, i) => {
       const a = i * TAU / 3 - 1.2;
       const radius = Math.min(WORLD.w, WORLD.h) * .34;
@@ -171,7 +171,7 @@
     $('reactionHint').textContent = reactionHint;
     refreshHud();
     if (start) {
-      say('YOU ARE THE LIME SNAKE', '#d6ff59', 2.3, 'neutral', 'DRAG THE JOYSTICK TO STEER');
+      say('You are the green snake', '#bbd86d', 2.8, 'neutral', 'Use the joystick or arrow keys to steer');
       chirp(520, .10, 'triangle', .03);
     }
   }
@@ -209,8 +209,8 @@
     const toast = $('toast');
     $('toastTitle').textContent = message;
     $('toastDetail').textContent = detail;
-    $('toastKicker').textContent = kind === 'negative' ? '✕ WATCH OUT!' : kind === 'positive' ? '✓ WELL PLAYED!' : 'ARENA UPDATE';
-    $('toastIcon').textContent = kind === 'negative' ? '✕' : kind === 'positive' ? '✓' : '✳';
+    $('toastKicker').textContent = kind === 'negative' ? 'WATCH OUT' : kind === 'positive' ? 'NICE ONE' : 'GAME INFO';
+    $('toastIcon').textContent = kind === 'negative' ? '!' : kind === 'positive' ? '+' : 'i';
     toast.style.setProperty('--feedback-color', color);
     toast.classList.remove('show', 'positive', 'negative', 'neutral');
     toast.classList.add(kind, 'show');
@@ -365,14 +365,14 @@
     if (snake.type === 'player' && energy <= .5) boostLocked = true;
     if (snake.type === 'player' && !wantsBoost && energy >= 22 && boostLocked) {
       boostLocked = false; boostWarned = false;
-      say('BOOST READY!', '#d6ff59', 1.0, 'positive', 'ENERGY RECHARGED');
+      say('Boost ready', '#bbd86d', 1.0, 'positive', 'Energy recharged');
     }
     const boosting = wantsBoost && !boostLocked && energy > .5;
     if (boosting) energy = Math.max(0, energy - 36 * dt);
     else if (snake.type === 'player') energy = Math.min(100, energy + 7 * dt);
     if (wantsBoost && boostLocked && !boostWarned) {
       boostWarned = true;
-      say('BOOST EMPTY!', '#ff668d', 1.6, 'negative', 'RELEASE BOOST TO RECHARGE');
+      say('Boost empty', '#bb4e43', 1.6, 'negative', 'Release boost and recharge');
       chirp(160, .22, 'sawtooth', .045, -85);
     }
     let speed = snake.speed * (snake.type === 'player' ? 1 : 1 + Math.min(.3, (wave - 1) * .065));
@@ -425,7 +425,7 @@
     ripple(player.x, player.y, '#ff668d', 160);
     burst(player.x, player.y, '#ff668d', 20, 175);
     floating(player.x, player.y - 30, '-1 LIFE', '#ff668d');
-    say('–1 LIFE! ' + label, '#ff668d', 2.0, 'negative', 'AVOID WALLS AND SNAKE BODIES');
+    say('Lost a life · ' + label.toLowerCase(), '#bb4e43', 2.3, 'negative', 'Avoid walls and snake bodies');
     chirp(220, .22, 'sawtooth', .06, -145);
     if (lives <= 0) endGame();
     refreshHud();
@@ -441,7 +441,7 @@
       score += 200;
       energy = Math.min(100, energy + 22);
       floating(bot.x, bot.y - 35, '+200 K.O.', '#d6ff59');
-      say('K.O.! +200', '#d6ff59', 1.5, 'positive', bot.name + ' IS OUT');
+      say('Knockout · +200', '#bbd86d', 1.5, 'positive', bot.name + ' is out');
       chirp(420, .24, 'triangle', .05, 260);
     }
     for (let i = 0; i < 4; i++) spawnFood(bot.x + rand(-24, 24), bot.y + rand(-24, 24), undefined, 95);
@@ -486,7 +486,7 @@
       floating(player.x, player.y - 38, '+4 SEGMENTS', '#d6ff59');
       chirp(510, .26, 'sine', .055, 410);
     }
-    say(reactionTitle, '#d6ff59', 1.8, 'positive', 'PERFECT MIX! ' + reactionHint);
+    say(reactionTitle, '#bbd86d', 1.8, 'positive', 'Color reaction triggered');
     refreshHud();
   }
 
@@ -508,7 +508,7 @@
       chirp(370 + PALETTE.indexOf(food.color) * 110 + Math.min(5, combo) * 40, .09, 'sine', .035, 80);
       if (changed && reactionCooldown <= 0) emitReaction(lastColor, food.color);
       else {
-        say('+' + bonus + ' POINTS!', '#d6ff59', .78, 'positive', changed ? 'GOOD MIX! KEEP GOING' : 'NICE BITE! TRY A NEW COLOR');
+        say('+' + bonus + ' points', '#bbd86d', .88, 'positive', changed ? 'Different color collected' : 'Try a different color next');
         if (!changed) {
           reactionTitle = C[food.color].label + ' COLLECTED';
           reactionHint = 'NEXT: TRY A DIFFERENT COLOR';
@@ -526,7 +526,7 @@
     if (snake !== player) {
       grow(snake, 2);
       burst(pick.x, pick.y, pick.color, 14, 130);
-      if (snake.type === 'trickster') say('POWER-UP STOLEN', '#ff668d', 1.5, 'negative', 'BEAT ZIG TO THE NEXT ONE');
+      if (snake.type === 'trickster') say('Power-up stolen', '#bb4e43', 1.8, 'negative', 'Zig got there first');
       return;
     }
     if (pick.type === 'shield') {
@@ -538,7 +538,7 @@
     score += 70;
     ripple(pick.x, pick.y, pick.color, 100);
     burst(pick.x, pick.y, pick.color, 26, 150);
-    say(POWER[pick.type].name + ' ACTIVATED!', '#d6ff59', 1.65, 'positive', '+70 POINTS · POWER-UP COLLECTED');
+    say(POWER[pick.type].name + ' activated', '#bbd86d', 1.65, 'positive', '+70 points · power-up collected');
     floating(pick.x, pick.y - 20, '+70', pick.color);
     chirp(570, .16, 'triangle', .05, 270);
     refreshHud();
@@ -599,7 +599,15 @@
     }
     if (toastClock > 0) {
       toastClock -= dt;
-      if (toastClock <= 0) $('toast').classList.remove('show');
+      if (toastClock <= 0) {
+        const toast = $('toast');
+        toast.classList.remove('show', 'positive', 'negative');
+        toast.classList.add('neutral');
+        $('toastKicker').textContent = 'IN PLAY';
+        $('toastTitle').textContent = 'Keep moving';
+        $('toastDetail').textContent = 'Try another color to trigger a reaction.';
+        $('toastIcon').textContent = 'i';
+      }
     }
     shake *= Math.max(0, 1 - dt * 8);
     feedbackTint = Math.max(0, feedbackTint - dt * (feedbackMode === 'negative' ? 1.25 : 1.5));
@@ -718,77 +726,77 @@
   }
 
   function drawBackground() {
-    ctx.fillStyle = '#09111e';
+    // Flat dark ink, quiet dot grid. Brightness is reserved for game-relevant objects.
+    ctx.fillStyle = '#1c2828';
     ctx.fillRect(0, 0, WORLD.w, WORLD.h);
-    const gradient = ctx.createRadialGradient(WORLD.w * .56, WORLD.h * .43, 0, WORLD.w * .56, WORLD.h * .43, WORLD.w * .75);
-    gradient.addColorStop(0, '#17213a');
-    gradient.addColorStop(.55, '#0e1728');
-    gradient.addColorStop(1, '#080d18');
-    ctx.fillStyle = gradient; ctx.fillRect(0, 0, WORLD.w, WORLD.h);
-    const step = 46;
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = '#26364b60';
-    ctx.beginPath();
-    for (let x = 0; x <= WORLD.w; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, WORLD.h); }
-    for (let y = 0; y <= WORLD.h; y += step) { ctx.moveTo(0, y); ctx.lineTo(WORLD.w, y); }
-    ctx.stroke();
-    ctx.fillStyle = '#3e536833';
-    for (let x = 0; x < WORLD.w; x += step) {
-      for (let y = 0; y < WORLD.h; y += step) {
-        ctx.fillRect(x - 1, y - 1, 2, 2);
+    const step = 44;
+    ctx.fillStyle = '#68766b3d';
+    for (let x = step / 2; x < WORLD.w; x += step) {
+      for (let y = step / 2; y < WORLD.h; y += step) {
+        ctx.fillRect(x - .8, y - .8, 1.6, 1.6);
       }
     }
-    ctx.strokeStyle = '#64789740';
+    ctx.strokeStyle = '#75877835';
+    ctx.lineWidth = 1;
     ctx.strokeRect(11, 11, WORLD.w - 22, WORLD.h - 22);
   }
 
   function drawWells() {
     for (const w of wells) {
       const alpha = Math.min(1, w.life * 2, (w.maxLife - w.life) * 2);
-      ctx.save(); ctx.translate(w.x, w.y); ctx.rotate(ambientTime * .42 + w.spin);
+      ctx.save();
+      ctx.translate(w.x, w.y);
+      ctx.rotate(ambientTime * .34 + w.spin);
       ctx.globalAlpha = alpha;
-      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, w.radius);
-      glow.addColorStop(0, '#a385ff46'); glow.addColorStop(.5, '#a385ff12'); glow.addColorStop(1, '#a385ff00');
-      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(0, 0, w.radius, 0, TAU); ctx.fill();
-      for (let i = 0; i < 5; i++) {
-        ctx.beginPath(); ctx.arc(0, 0, 20 + i * 19, i * 1.15, i * 1.15 + Math.PI * 1.16);
-        ctx.strokeStyle = i % 2 ? '#a48bff66' : '#55e9e16b';
-        ctx.lineWidth = i === 0 ? 4 : 1.5; ctx.stroke();
+      ctx.strokeStyle = '#a99bc48f';
+      ctx.lineWidth = 1.8;
+      for (let i = 0; i < 4; i++) {
+        const radius = 26 + i * 24;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, i * .6, i * .6 + Math.PI * 1.3);
+        ctx.stroke();
       }
-      glowingCircle(0, 0, 7, '#b69aff', 25);
+      ctx.fillStyle = '#a99bc4';
+      ctx.beginPath(); ctx.arc(0, 0, 7, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#263331';
+      ctx.beginPath(); ctx.arc(0, 0, 3, 0, TAU); ctx.fill();
       ctx.restore();
     }
   }
 
   function drawFoods() {
     for (const f of foods) {
-      const y = f.y + Math.sin(f.phase) * 2.5;
-      ctx.globalAlpha = .12;
-      glowingCircle(f.x, y, f.size * 2.25, C[f.color].hex, 19);
-      ctx.globalAlpha = 1;
-      glowingCircle(f.x, y, f.size, C[f.color].hex, 12);
+      const y = f.y + Math.sin(f.phase) * 2;
+      ctx.fillStyle = C[f.color].hex;
+      ctx.beginPath(); ctx.arc(f.x, y, f.size, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#e1e8dc80'; ctx.lineWidth = 1.3; ctx.stroke();
       ctx.fillStyle = C[f.color].soft;
-      ctx.beginPath(); ctx.arc(f.x - f.size * .21, y - f.size * .24, f.size * .3, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(f.x - 2, y - 2, Math.max(1.4, f.size * .25), 0, TAU); ctx.fill();
     }
   }
 
   function drawPickups() {
     for (const p of pickups) {
-      const blink = p.life < 4 ? .45 + .55 * Math.abs(Math.sin(ambientTime * 8)) : 1;
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ambientTime * 1.2 + p.spin);
+      const blink = p.life < 4 ? .5 + .5 * Math.abs(Math.sin(ambientTime * 7)) : 1;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(ambientTime * .7 + p.spin);
       ctx.globalAlpha = blink;
-      ctx.shadowColor = p.color; ctx.shadowBlur = 20;
-      ctx.strokeStyle = p.color; ctx.fillStyle = '#18273a';
-      ctx.lineWidth = 3; ctx.beginPath();
+      ctx.fillStyle = '#263330';
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
       for (let i = 0; i < 6; i++) {
         const a = i * TAU / 6;
-        if (!i) ctx.moveTo(Math.cos(a) * 20, Math.sin(a) * 20);
-        else ctx.lineTo(Math.cos(a) * 20, Math.sin(a) * 20);
+        const x = Math.cos(a) * 19, y = Math.sin(a) * 19;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.rotate(-ambientTime * 1.2 - p.spin);
-      ctx.shadowBlur = 0; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = p.color; ctx.font = 'bold 22px sans-serif';
+      ctx.rotate(-ambientTime * .7 - p.spin);
+      ctx.fillStyle = p.color;
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.fillText(POWER[p.type].symbol, 0, 1);
       ctx.restore();
     }
@@ -796,95 +804,112 @@
 
   function drawSnake(snake) {
     if (!snake.alive) return;
-    const ghost = snake === player && buffs.phase > 0;
+    const isPlayer = snake === player;
+    const ghost = isPlayer && buffs.phase > 0;
     ctx.save();
-    if (ghost) ctx.globalAlpha = .62 + Math.sin(ambientTime * 18) * .15;
-    else if (snake.invuln > 0 && snake === player) ctx.globalAlpha = .6 + .4 * Math.abs(Math.sin(ambientTime * 10));
-    const b = snake.body;
-    for (let i = b.length - 1; i >= 1; i--) {
-      const part = b[i];
-      const taper = Math.min(1, .28 + (b.length - i) / 8);
-      const r = 11.3 * taper;
+    if (ghost) ctx.globalAlpha = .6 + Math.sin(ambientTime * 15) * .12;
+    else if (snake.invuln > 0 && isPlayer) ctx.globalAlpha = .76 + .24 * Math.abs(Math.sin(ambientTime * 9));
+    const body = snake.body;
+    for (let i = body.length - 1; i >= 1; i--) {
+      const part = body[i];
+      const taper = Math.min(1, .36 + (body.length - i) / 8);
+      const r = (isPlayer ? 11.3 : 10.3) * taper;
+      ctx.beginPath();
+      ctx.arc(part.x, part.y, r, 0, TAU);
       ctx.fillStyle = i % 4 === 0 ? snake.color : (part.color || snake.color);
-      ctx.shadowColor = snake.color; ctx.shadowBlur = i % 3 === 0 ? (snake === player ? 20 : 11) : 4;
-      ctx.beginPath(); ctx.arc(part.x, part.y, r, 0, TAU); ctx.fill();
-      if (snake === player) {
-        ctx.lineWidth = 1.8; ctx.strokeStyle = '#f4ffe0'; ctx.shadowBlur = 0; ctx.stroke();
-      }
-      if (i % 4 === 1 && i < b.length - 3) {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#ffffff50';
-        ctx.beginPath(); ctx.arc(part.x - 2.5, part.y - 3, Math.max(1.5, r * .23), 0, TAU); ctx.fill();
+      ctx.fill();
+      ctx.strokeStyle = isPlayer ? '#e4edce' : '#1d2928';
+      ctx.lineWidth = isPlayer ? 1.6 : 1.2;
+      ctx.stroke();
+      if (i % 5 === 2 && i < body.length - 4) {
+        ctx.fillStyle = '#ffffff4d';
+        ctx.beginPath();
+        ctx.arc(part.x - 2, part.y - 2, 1.7, 0, TAU);
+        ctx.fill();
       }
     }
-    ctx.translate(snake.x, snake.y); ctx.rotate(snake.angle);
-    const headColor = snake === player ? '#d6ff59' : (snake.body[0].color || snake.color);
-    ctx.shadowColor = headColor; ctx.shadowBlur = snake === player ? 30 : 21;
-    ctx.fillStyle = headColor; ctx.beginPath(); ctx.ellipse(0, 0, snake === player ? 21 : 18.5, snake === player ? 16 : 14.5, 0, 0, TAU); ctx.fill();
-    if (snake === player) {
-      ctx.shadowBlur = 0; ctx.strokeStyle = '#f8ffdd'; ctx.lineWidth = 3.2;
-      ctx.beginPath(); ctx.ellipse(0, 0, 22, 17, 0, 0, TAU); ctx.stroke();
-    }
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#ffffff45';
-    ctx.beginPath(); ctx.ellipse(-5, -5, 6, 3.8, -.25, 0, TAU); ctx.fill();
-    ctx.fillStyle = '#08101a';
-    ctx.beginPath(); ctx.ellipse(5, -6.5, 2.9, 3.7, 0, 0, TAU);
-    ctx.ellipse(5, 6.5, 2.9, 3.7, 0, 0, TAU); ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(5.5, -7.5, 1.05, 0, TAU); ctx.arc(5.5, 5.5, 1.05, 0, TAU); ctx.fill();
-    if (snake === player && (keys.has('Space') || boostingTouch) && energy > 0) {
-      ctx.strokeStyle = '#d6ff59bb'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(-23, -7); ctx.lineTo(-36 - Math.random() * 9, -7);
-      ctx.moveTo(-23, 7); ctx.lineTo(-36 - Math.random() * 9, 7); ctx.stroke();
+    ctx.translate(snake.x, snake.y);
+    ctx.rotate(snake.angle);
+    const headColor = isPlayer ? '#bbd86d' : (body[0].color || snake.color);
+    ctx.fillStyle = headColor;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, isPlayer ? 20 : 18.5, isPlayer ? 15.5 : 14.5, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = isPlayer ? '#edf3d9' : '#1d2928';
+    ctx.lineWidth = isPlayer ? 2.5 : 1.4;
+    ctx.stroke();
+    ctx.fillStyle = '#202b29';
+    ctx.beginPath();
+    ctx.ellipse(7, -6, 2.7, 3.3, 0, 0, TAU);
+    ctx.ellipse(7, 6, 2.7, 3.3, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = '#f7f8ec';
+    ctx.beginPath();
+    ctx.arc(7.7, -6.8, .9, 0, TAU);
+    ctx.arc(7.7, 5.3, .9, 0, TAU);
+    ctx.fill();
+    if (isPlayer && (keys.has('Space') || boostingTouch) && energy > 0) {
+      ctx.strokeStyle = '#d5e59f'; ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(-21, -7); ctx.lineTo(-34 - Math.random() * 7, -7);
+      ctx.moveTo(-21, 7); ctx.lineTo(-34 - Math.random() * 7, 7);
+      ctx.stroke();
     }
     ctx.restore();
-    if (snake === player) {
+    if (isPlayer) {
+      // This restrained marker remains visible through every color reaction.
       ctx.save();
-      // Persistent locator distinguishes your snake even after a color reaction.
-      const pulse = 29 + Math.sin(ambientTime * 4) * 2;
-      ctx.strokeStyle = '#d6ff59'; ctx.lineWidth = 2.3; ctx.shadowBlur = 15; ctx.shadowColor = '#d6ff59';
-      ctx.globalAlpha = .66;
-      ctx.beginPath(); ctx.arc(snake.x, snake.y, pulse, 0, TAU); ctx.stroke();
-      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-      const lx = clamp(snake.x, 38, WORLD.w - 38);
-      const above = snake.y >= 102;
-      const ly = above ? snake.y - 54 : snake.y + 55;
-      ctx.strokeStyle = '#d6ff59b3'; ctx.lineWidth = 2; ctx.beginPath();
-      ctx.moveTo(snake.x, snake.y + (above ? -23 : 23));
-      ctx.lineTo(lx, ly + (above ? 11 : -11)); ctx.stroke();
-      ctx.fillStyle = '#d6ff59'; ctx.fillRect(lx - 34, ly - 13, 68, 27);
-      ctx.fillStyle = '#0b1420'; ctx.font = 'bold 13px "DM Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('▶ YOU', lx, ly + 1);
+      ctx.strokeStyle = '#bbd86dc5';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(snake.x, snake.y, 27 + Math.sin(ambientTime * 3) * 1.4, 0, TAU);
+      ctx.stroke();
+      const x = clamp(snake.x, 30, WORLD.w - 30);
+      const above = snake.y > 96;
+      const y = snake.y + (above ? -47 : 47);
+      ctx.fillStyle = '#bbd86d';
+      ctx.fillRect(x - 25, y - 12, 50, 24);
+      ctx.fillStyle = '#253329';
+      ctx.font = 'bold 12px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('YOU', x, y + 1);
       ctx.restore();
     } else {
       ctx.save();
-      ctx.textAlign = 'center'; ctx.fillStyle = snake.color;
-      ctx.font = '10px "DM Mono", monospace';
-      ctx.fillText(snake.name, snake.x, snake.y - 27);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#d4ded5';
+      ctx.font = '10px "IBM Plex Mono", monospace';
+      ctx.fillText(snake.name, snake.x, snake.y - 25);
       ctx.restore();
     }
   }
 
   function drawEffects() {
     for (const ring of rings) {
-      ctx.save(); ctx.globalAlpha = Math.max(0, ring.life / ring.maxLife) * .72;
-      ctx.strokeStyle = ring.color; ctx.lineWidth = 4 * ring.life / ring.maxLife;
-      ctx.shadowColor = ring.color; ctx.shadowBlur = 20;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, ring.life / ring.maxLife) * .7;
+      ctx.strokeStyle = ring.color;
+      ctx.lineWidth = 3 * ring.life / ring.maxLife;
       ctx.beginPath(); ctx.arc(ring.x, ring.y, ring.r, 0, TAU); ctx.stroke();
       ctx.restore();
     }
     for (const p of particles) {
       ctx.save();
       ctx.globalAlpha = p.life / p.maxLife;
-      glowingCircle(p.x, p.y, p.size * (p.life / p.maxLife), p.color, 7);
+      ctx.fillStyle = p.color;
+      const r = Math.max(1, p.size * .55 * p.life / p.maxLife);
+      ctx.fillRect(p.x - r, p.y - r, 2 * r, 2 * r);
       ctx.restore();
     }
     for (const f of floats) {
-      ctx.save(); ctx.globalAlpha = Math.min(1, f.life * 2);
-      ctx.fillStyle = f.color; ctx.font = 'bold 13px "DM Mono", monospace'; ctx.textAlign = 'center';
-      ctx.shadowColor = '#000'; ctx.shadowBlur = 9;
-      ctx.fillText(f.text, f.x, f.y); ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, f.life * 2);
+      ctx.fillStyle = f.color;
+      ctx.font = 'bold 13px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(f.text, f.x, f.y);
+      ctx.restore();
     }
   }
 
@@ -892,16 +917,13 @@
     if (feedbackTint <= 0) return;
     const t = feedbackTint;
     const bad = feedbackMode === 'negative';
-    const rgb = bad ? '255,71,100' : '214,255,89';
+    const rgb = bad ? '185,70,61' : '187,216,109';
     ctx.save();
-    const gradient = ctx.createRadialGradient(WORLD.w * .5, WORLD.h * .5, WORLD.h * .12, WORLD.w * .5, WORLD.h * .5, WORLD.w * .64);
-    gradient.addColorStop(0, 'rgba(' + rgb + ',0)');
-    gradient.addColorStop(1, 'rgba(' + rgb + ',' + (bad ? .43 : .17) * t + ')');
-    ctx.fillStyle = gradient; ctx.fillRect(0, 0, WORLD.w, WORLD.h);
-    ctx.strokeStyle = 'rgba(' + rgb + ',' + (bad ? .98 : .73) * t + ')';
-    ctx.lineWidth = bad ? 22 * t : 12 * t;
-    ctx.shadowColor = 'rgb(' + rgb + ')'; ctx.shadowBlur = bad ? 40 * t : 27 * t;
-    ctx.strokeRect(6, 6, WORLD.w - 12, WORLD.h - 12);
+    ctx.fillStyle = 'rgba(' + rgb + ',' + (bad ? .18 : .08) * t + ')';
+    ctx.fillRect(0, 0, WORLD.w, WORLD.h);
+    ctx.strokeStyle = 'rgba(' + rgb + ',' + (bad ? .94 : .62) * t + ')';
+    ctx.lineWidth = (bad ? 22 : 9) * t;
+    ctx.strokeRect(5, 5, WORLD.w - 10, WORLD.h - 10);
     ctx.restore();
   }
 
@@ -1016,7 +1038,7 @@
   boostButton.textContent = '↗ BOOST';
   boostButton.setAttribute('aria-label', 'Hold to boost');
   boostButton.className = 'touch-boost';
-  boostButton.style.cssText = 'display:none;position:absolute;z-index:3;right:14px;bottom:42px;touch-action:none;padding:17px 13px;border:1px solid #d6ff59;border-radius:50%;width:76px;height:76px;background:#d6ff59d9;color:#0b1120;font:700 12px Space Grotesk,sans-serif;box-shadow:0 2px 25px #d6ff5933;';
+  boostButton.style.display = 'none';
   arena.appendChild(boostButton);
   function syncBoostButton() { boostButton.style.display = matchMedia('(pointer:coarse)').matches && mode === 'playing' ? 'block' : 'none'; }
   boostButton.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); boostingTouch = true; boostButton.setPointerCapture(e.pointerId); });
