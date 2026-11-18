@@ -33,7 +33,7 @@ Open index.html in a current browser, or serve the folder with the Python comman
 - **index.html** — app structure and accessible game controls
 - **style.css** — responsive visual design
 - **game.js** — canvas renderer, game loop, physics, autonomous rivals, color mixing, pickups and effects
-- **.github/workflows/pages.yml** — GitHub Pages deployment from main
+- **GitHub Pages** — site publishes automatically from the main branch
 
 The rivals are autonomous rule/utility-based game AI, not remote generative models. This keeps them responsive, free, easy to debug, and playable offline.
 
