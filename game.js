@@ -472,6 +472,8 @@
       energy = Math.min(100, energy + 9);
       snake.body[0].color = C[food.color].hex;
       grow(snake, 1);
+      // Pigment spreads down the newest links, leaving a history of color bands.
+      for (let j = 1; j < Math.min(snake.body.length, 7); j++) snake.body[j].color = C[food.color].hex;
       burst(food.x, food.y, C[food.color].hex, 9, 100);
       floating(food.x, food.y - 14, '+' + bonus, C[food.color].hex);
       chirp(370 + PALETTE.indexOf(food.color) * 110 + Math.min(5, combo) * 40, .09, 'sine', .035, 80);
@@ -780,8 +782,9 @@
       }
     }
     ctx.translate(snake.x, snake.y); ctx.rotate(snake.angle);
-    ctx.shadowColor = snake.color; ctx.shadowBlur = 21;
-    ctx.fillStyle = snake.color; ctx.beginPath(); ctx.ellipse(0, 0, 18.5, 14.5, 0, 0, TAU); ctx.fill();
+    const headColor = snake.body[0].color || snake.color;
+    ctx.shadowColor = headColor; ctx.shadowBlur = 21;
+    ctx.fillStyle = headColor; ctx.beginPath(); ctx.ellipse(0, 0, 18.5, 14.5, 0, 0, TAU); ctx.fill();
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#ffffff45';
     ctx.beginPath(); ctx.ellipse(-5, -5, 6, 3.8, -.25, 0, TAU); ctx.fill();
@@ -897,7 +900,6 @@
   boostButton.addEventListener('pointerup', () => { boostingTouch = false; });
   boostButton.addEventListener('pointercancel', () => { boostingTouch = false; });
   boostButton.addEventListener('lostpointercapture', () => { boostingTouch = false; });
-  const originalReset = reset;
   // Track scene mode without polling every frame for the mobile control.
   const observer = new MutationObserver(syncBoostButton);
   observer.observe($('menu'), { attributes: true, attributeFilter: ['class'] });
@@ -907,7 +909,6 @@
   function updateBoostVisibility() {
     boostButton.style.display = matchMedia('(pointer:coarse)').matches && mode === 'playing' ? 'block' : 'none';
   }
-  const oldShowPause = showPause;
   // MutationObserver runs at the end of the input task, after mode changes.
   window.addEventListener('resize', () => { resize(); updateBoostVisibility(); });
   resize();
