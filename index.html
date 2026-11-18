@@ -28,11 +28,11 @@
         </div>
 
         <div class="arena" id="arena">
-          <canvas id="game" role="img" aria-label="Playfield. Steer with mouse, touch, WASD or arrow keys."></canvas>
+          <canvas id="game" role="img" aria-label="Playfield. Steer with the on-screen joystick, mouse, touch, WASD or arrow keys."></canvas>
           <div class="grain" aria-hidden="true"></div>
 
           <div id="hud" class="hud">
-            <div class="stat"><span class="stat-label">SCORE</span><strong id="score">000000</strong></div>
+            <div class="stat"><span class="stat-label">SCORE</span><strong id="score">000000</strong><span class="player-ident"><span class="player-swatch"></span> YOU = LIME SNAKE</span></div>
             <div class="stat stat-best"><span class="stat-label">PERSONAL BEST</span><strong id="best">000000</strong></div>
             <div class="hud-right">
               <div class="health"><span class="stat-label">LIVES</span><span id="hearts" class="hearts">♥ ♥ ♥</span></div>
@@ -42,7 +42,17 @@
 
           <div class="reaction-hud"><div id="reactionName" class="reaction-name">FIND YOUR FIRST COLOR</div><div id="reactionHint" class="reaction-hint">MIX DIFFERENT COLORS FOR REACTIONS</div></div>
           <div id="powerBadges" class="power-badges"></div>
-          <div id="toast" class="toast" aria-live="polite"></div>
+          <div id="toast" class="toast neutral" role="status" aria-live="polite" aria-atomic="true">
+            <div id="toastIcon" class="toast-icon" aria-hidden="true">✳</div>
+            <div class="toast-copy"><span id="toastKicker" class="toast-kicker">ARENA UPDATE</span><strong id="toastTitle" class="toast-title"></strong><span id="toastDetail" class="toast-detail"></span></div>
+          </div>
+          <div id="joystick" class="joystick" aria-label="Move your snake">
+            <span class="joystick-label">MOVE / DRAG</span>
+            <div id="joystickPad" class="joystick-pad" role="button" tabindex="0" aria-label="On-screen joystick: drag in a direction to steer">
+              <span class="joystick-arrows" aria-hidden="true">↖ ↗<span>↙ ↘</span></span>
+              <span id="joystickKnob" class="joystick-knob" aria-hidden="true"><span>+</span></span>
+            </div>
+          </div>
           <div class="arena-bottom"><span id="arenaStatus"><span class="status-dot"></span> THREE RIVALS IN THE PIT</span><span id="levelLabel">WAVE 01</span></div>
 
           <div id="menu" class="screen">
@@ -57,7 +67,7 @@
                 <div><span class="formula"><i class="orb cyan"></i> + <i class="orb yellow"></i> <b>→</b></span><strong>GROWTH SPURT</strong></div>
               </div>
               <button id="playButton" class="primary-button" type="button">ENTER THE PIT <span>↗</span></button>
-              <div class="menu-help">WASD / ARROWS / MOUSE / TOUCH TO STEER <span>·</span> SPACE TO BOOST</div>
+              <div class="menu-help">DRAG THE JOYSTICK / WASD / ARROWS / MOUSE TO STEER <span>·</span> SPACE TO BOOST</div>
             </div>
             <div class="menu-sticker">NO TWO<br>RUNS ALIKE <span>✳</span></div>
           </div>
@@ -71,7 +81,7 @@
         </div>
 
         <div class="frame-bottom">
-          <span>MOVE <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> / MOUSE / TOUCH</span>
+          <span>MOVE <strong>JOYSTICK</strong> / <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> / MOUSE</span>
           <span>BOOST <kbd>SPACE</kbd> <span class="bottom-separator">·</span> PAUSE <kbd>P</kbd> <span class="bottom-separator">·</span> RESTART <kbd>R</kbd></span>
         </div>
       </section>
