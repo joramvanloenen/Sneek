@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <meta name="description" content="SNEEK — a kinetic, color-reactive arcade snake game with rival AI snakes, physics and wild power-ups.">
+  <title>SNEEK — Eat color. Cause chaos.</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./game.js" defer></script>
+</head>
+<body>
+  <div class="site">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Sneek home"><span class="brand-symbol" aria-hidden="true">〰</span><span>SNEEK<span class="brand-dot">.</span></span></a>
+      <span class="header-note">AN EXPERIMENT IN CONTROLLED CHAOS <span class="sparkle">✳</span></span>
+      <div class="header-right"><span class="live-indicator"></span> CHROMA ARENA <span class="version">/ 001</span></div>
+    </header>
+
+    <main>
+      <section class="game-shell" aria-label="Sneek game">
+        <div class="frame-top">
+          <span><span class="little-square"></span> THE PIT <span class="frame-slash">/</span> SURVIVAL MODE</span>
+          <div class="frame-actions">
+            <button id="soundButton" class="mini-button" type="button" aria-label="Turn sound on or off" title="Sound">SOUND <span id="soundState">OFF</span></button>
+            <button id="pauseButton" class="mini-button" type="button" title="Pause (P)">Ⅱ <span>PAUSE</span></button>
+          </div>
+        </div>
+
+        <div class="arena" id="arena">
+          <canvas id="game" role="img" aria-label="Playfield. Steer with mouse, touch, WASD or arrow keys."></canvas>
+          <div class="grain" aria-hidden="true"></div>
+
+          <div id="hud" class="hud">
+            <div class="stat"><span class="stat-label">SCORE</span><strong id="score">000000</strong></div>
+            <div class="stat stat-best"><span class="stat-label">PERSONAL BEST</span><strong id="best">000000</strong></div>
+            <div class="hud-right">
+              <div class="health"><span class="stat-label">LIVES</span><span id="hearts" class="hearts">♥ ♥ ♥</span></div>
+              <div class="energy"><div class="energy-heading"><span class="stat-label">BOOST <kbd>SPACE</kbd></span><span id="energyText">100%</span></div><div class="meter"><div id="energyFill"></div></div></div>
+            </div>
+          </div>
+
+          <div class="reaction-hud"><div id="reactionName" class="reaction-name">FIND YOUR FIRST COLOR</div><div id="reactionHint" class="reaction-hint">MIX DIFFERENT COLORS FOR REACTIONS</div></div>
+          <div id="powerBadges" class="power-badges"></div>
+          <div id="toast" class="toast" aria-live="polite"></div>
+          <div class="arena-bottom"><span id="arenaStatus"><span class="status-dot"></span> THREE RIVALS IN THE PIT</span><span id="levelLabel">WAVE 01</span></div>
+
+          <div id="menu" class="screen">
+            <div class="intro-orbit orbit-a"></div><div class="intro-orbit orbit-b"></div>
+            <div class="menu-content">
+              <span class="eyebrow"><span class="live-indicator"></span> ARCADE EXPERIMENT NO. 001</span>
+              <h1>SNAKE GOT<br><em>WEIRD<span>.</span></em></h1>
+              <p>Eat colors. Trigger reactions. Outwit the others.<br>Stay in one piece. More or less.</p>
+              <div class="reaction-preview" aria-label="Three possible color reactions">
+                <div><span class="formula"><i class="orb coral"></i> + <i class="orb cyan"></i> <b>→</b></span><strong>ION BLAST</strong></div>
+                <div><span class="formula"><i class="orb coral"></i> + <i class="orb yellow"></i> <b>→</b></span><strong>SOLAR FLARE</strong></div>
+                <div><span class="formula"><i class="orb cyan"></i> + <i class="orb yellow"></i> <b>→</b></span><strong>GROWTH SPURT</strong></div>
+              </div>
+              <button id="playButton" class="primary-button" type="button">ENTER THE PIT <span>↗</span></button>
+              <div class="menu-help">WASD / ARROWS / MOUSE / TOUCH TO STEER <span>·</span> SPACE TO BOOST</div>
+            </div>
+            <div class="menu-sticker">NO TWO<br>RUNS ALIKE <span>✳</span></div>
+          </div>
+
+          <div id="pauseScreen" class="screen hidden">
+            <div class="modal-content"><span class="eyebrow">TAKING A BREATHER?</span><h2>PAUSED<span>.</span></h2><p>The chaos can wait. For a moment.</p><button id="resumeButton" class="primary-button" type="button">BACK INTO IT <span>↗</span></button><div class="menu-help">PRESS P OR ESC TO RESUME</div></div>
+          </div>
+          <div id="gameOverScreen" class="screen hidden">
+            <div class="modal-content"><span class="eyebrow">END OF THE LINE</span><h2>YOU GOT<br><em>SNEEK'D<span>.</span></em></h2><p id="finalMessage">The pit has claimed another one.</p><div class="results"><div><span>SCORE</span><strong id="finalScore">0</strong></div><div><span>BEST</span><strong id="finalBest">0</strong></div><div><span>REACTIONS</span><strong id="finalReactions">0</strong></div></div><button id="restartButton" class="primary-button" type="button">ONE MORE ROUND <span>↗</span></button><div class="menu-help">PRESS ENTER TO RESTART</div></div>
+          </div>
+        </div>
+
+        <div class="frame-bottom">
+          <span>MOVE <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> / MOUSE / TOUCH</span>
+          <span>BOOST <kbd>SPACE</kbd> <span class="bottom-separator">·</span> PAUSE <kbd>P</kbd> <span class="bottom-separator">·</span> RESTART <kbd>R</kbd></span>
+        </div>
+      </section>
+
+      <section class="field-guide" aria-label="How to play">
+        <div class="guide-intro"><span class="section-index">001 / FIELD NOTES</span><h2>THE RULES?<br><i>THEY REACT.</i></h2><p>Classic Snake DNA. A slightly questionable chemistry experiment on top.</p></div>
+        <div class="guide-card"><span class="card-index">01 — MIX</span><div class="guide-icon mix-icon"><span></span><span></span><span></span></div><h3>COLOR IS POWER</h3><p>Collect differently colored bites in sequence to unleash powerful arena-wide reactions.</p></div>
+        <div class="guide-card"><span class="card-index">02 — OUTSMART</span><div class="guide-icon rivals-icon">≈ <b>≈</b></div><h3>THEY LEARN THE PIT</h3><p>Three autonomous rivals have different goals: hunting, foraging, and stealing your pickups.</p></div>
+        <div class="guide-card"><span class="card-index">03 — DISRUPT</span><div class="guide-icon power-icon">✳</div><h3>BREAK THE PHYSICS</h3><p>Gravity wells, squishy collisions, speed boosts, shields, magnetism, and brief phasing.</p></div>
+      </section>
+    </main>
+    <footer><span>© SNEEK LABS / BUILT FOR FUN, NOT FOR SCIENCE.</span><span>MADE OF PIXELS & BAD DECISIONS <span class="sparkle">✳</span></span></footer>
+  </div>
+</body>
+</html>
