@@ -68,6 +68,11 @@
   let keys = new Set();
   let pointer = { x: WORLD.w * .72, y: WORLD.h * .5, active: false };
   let boostingTouch = false;
+  let joystick = { pressed: false, pointerId: null, active: false, angle: 0 };
+  let feedbackTint = 0;
+  let feedbackMode = 'positive';
+  let boostLocked = false;
+  let boostWarned = false;
   let audioCtx = null;
   let muted = true;
 
@@ -141,7 +146,7 @@
     time = 0; ambientTime = 0; shake = 0; hudClock = 0;
     nextPickup = 11; nextWell = 20; wave = 1;
     lives = 3; score = 0; combo = 0; reactions = 0; lastColor = null;
-    energy = 100; reactionCooldown = 0;
+    energy = 100; reactionCooldown = 0; feedbackTint = 0; boostLocked = false; boostWarned = false;
     reactionTitle = 'FIND YOUR FIRST COLOR';
     reactionHint = 'MIX DIFFERENT COLORS FOR REACTIONS';
     buffs = { magnet: 0, phase: 0, rush: 0 };
@@ -156,7 +161,7 @@
       return makeSnake(def.name, x, y, a + 2.1, def.color, def.type, def.length, def.speed);
     });
     for (let i = 0; i < (isMobile() ? 27 : 39); i++) spawnFood();
-    keys.clear(); pointer.active = false; boostingTouch = false;
+    keys.clear(); pointer.active = false; boostingTouch = false; resetJoystick();
     mode = start ? 'playing' : 'menu';
     $('menu').classList.toggle('hidden', start);
     $('pauseScreen').classList.add('hidden');
@@ -165,12 +170,16 @@
     $('reactionName').textContent = reactionTitle;
     $('reactionHint').textContent = reactionHint;
     refreshHud();
-    if (start) { say('GOOD LUCK IN THERE', '#d6ff59'); chirp(520, .10, 'triangle', .03); }
+    if (start) {
+      say('YOU ARE THE LIME SNAKE', '#d6ff59', 2.3, 'neutral', 'DRAG THE JOYSTICK TO STEER');
+      chirp(520, .10, 'triangle', .03);
+    }
   }
 
   function showPause() {
     if (mode === 'playing') {
-      mode = 'paused'; $('pauseScreen').classList.remove('hidden');
+      mode = 'paused'; resetJoystick(); boostingTouch = false;
+      $('pauseScreen').classList.remove('hidden');
       $('pauseButton').querySelector('span').textContent = 'RESUME';
     } else if (mode === 'paused') {
       mode = 'playing'; $('pauseScreen').classList.add('hidden');
@@ -196,12 +205,20 @@
     chirp(190, .4, 'sawtooth', .07, -110);
   }
 
-  function say(message, color = '#ffffff', duration = 1.4) {
+  function say(message, color = '#ffffff', duration = 1.4, kind = 'neutral', detail = '') {
     const toast = $('toast');
-    toast.textContent = message;
-    toast.style.color = color;
-    toast.classList.add('show');
+    $('toastTitle').textContent = message;
+    $('toastDetail').textContent = detail;
+    $('toastKicker').textContent = kind === 'negative' ? '✕ WATCH OUT!' : kind === 'positive' ? '✓ WELL PLAYED!' : 'ARENA UPDATE';
+    $('toastIcon').textContent = kind === 'negative' ? '✕' : kind === 'positive' ? '✓' : '✳';
+    toast.style.setProperty('--feedback-color', color);
+    toast.classList.remove('show', 'positive', 'negative', 'neutral');
+    toast.classList.add(kind, 'show');
     toastClock = duration;
+    if (kind !== 'neutral') {
+      feedbackMode = kind;
+      feedbackTint = kind === 'negative' ? 1 : .68;
+    }
   }
 
   function floating(x, y, text, color = '#ffffff') {
@@ -324,12 +341,13 @@
   }
 
   function playerDirection() {
+    if (joystick.pressed && joystick.active) return joystick.angle;
     let x = 0, y = 0;
     if (keys.has('ArrowLeft') || keys.has('KeyA')) x--;
     if (keys.has('ArrowRight') || keys.has('KeyD')) x++;
     if (keys.has('ArrowUp') || keys.has('KeyW')) y--;
     if (keys.has('ArrowDown') || keys.has('KeyS')) y++;
-    if (x || y) return Math.atan2(y, x);
+    if (x || y) { pointer.active = false; return Math.atan2(y, x); }
     if (pointer.active && dist2(pointer, player) > 23 ** 2) {
       return Math.atan2(pointer.y - player.y, pointer.x - player.x);
     }
@@ -343,9 +361,20 @@
     const desired = snake.type === 'player' ? playerDirection() : aiDirection(snake, dt);
     const turn = snake.type === 'player' ? 4.4 : 3.5;
     snake.angle += clamp(angleDiff(snake.angle, desired), -turn * dt, turn * dt);
-    const boosting = snake.type === 'player' && (keys.has('Space') || boostingTouch) && energy > 0.25;
+    const wantsBoost = snake.type === 'player' && (keys.has('Space') || boostingTouch);
+    if (snake.type === 'player' && energy <= .5) boostLocked = true;
+    if (snake.type === 'player' && !wantsBoost && energy >= 22 && boostLocked) {
+      boostLocked = false; boostWarned = false;
+      say('BOOST READY!', '#d6ff59', 1.0, 'positive', 'ENERGY RECHARGED');
+    }
+    const boosting = wantsBoost && !boostLocked && energy > .5;
     if (boosting) energy = Math.max(0, energy - 36 * dt);
     else if (snake.type === 'player') energy = Math.min(100, energy + 7 * dt);
+    if (wantsBoost && boostLocked && !boostWarned) {
+      boostWarned = true;
+      say('BOOST EMPTY!', '#ff668d', 1.6, 'negative', 'RELEASE BOOST TO RECHARGE');
+      chirp(160, .22, 'sawtooth', .045, -85);
+    }
     let speed = snake.speed * (snake.type === 'player' ? 1 : 1 + Math.min(.3, (wave - 1) * .065));
     if (boosting) speed *= 1.65;
     if (snake.type === 'player' && buffs.rush > 0) speed *= 1.24;
@@ -392,11 +421,11 @@
     lives--;
     combo = 0;
     player.invuln = 2;
-    shake = 16;
-    ripple(player.x, player.y, '#ff668d', 130);
+    shake = 24;
+    ripple(player.x, player.y, '#ff668d', 160);
     burst(player.x, player.y, '#ff668d', 20, 175);
     floating(player.x, player.y - 30, '-1 LIFE', '#ff668d');
-    say(label + '!', '#ff668d', 1);
+    say('–1 LIFE! ' + label, '#ff668d', 2.0, 'negative', 'AVOID WALLS AND SNAKE BODIES');
     chirp(220, .22, 'sawtooth', .06, -145);
     if (lives <= 0) endGame();
     refreshHud();
@@ -412,7 +441,7 @@
       score += 200;
       energy = Math.min(100, energy + 22);
       floating(bot.x, bot.y - 35, '+200 K.O.', '#d6ff59');
-      say(bot.name + ' GOT SNEEK’D', '#d6ff59', 1);
+      say('K.O.! +200', '#d6ff59', 1.5, 'positive', bot.name + ' IS OUT');
       chirp(420, .24, 'triangle', .05, 260);
     }
     for (let i = 0; i < 4; i++) spawnFood(bot.x + rand(-24, 24), bot.y + rand(-24, 24), undefined, 95);
@@ -457,7 +486,7 @@
       floating(player.x, player.y - 38, '+4 SEGMENTS', '#d6ff59');
       chirp(510, .26, 'sine', .055, 410);
     }
-    say(reactionTitle, '#f3f8fd', 1.5);
+    say(reactionTitle, '#d6ff59', 1.8, 'positive', 'PERFECT MIX! ' + reactionHint);
     refreshHud();
   }
 
@@ -478,9 +507,12 @@
       floating(food.x, food.y - 14, '+' + bonus, C[food.color].hex);
       chirp(370 + PALETTE.indexOf(food.color) * 110 + Math.min(5, combo) * 40, .09, 'sine', .035, 80);
       if (changed && reactionCooldown <= 0) emitReaction(lastColor, food.color);
-      else if (!changed) {
-        reactionTitle = C[food.color].label + ' COLLECTED';
-        reactionHint = 'NEXT: TRY A DIFFERENT COLOR';
+      else {
+        say('+' + bonus + ' POINTS!', '#d6ff59', .78, 'positive', changed ? 'GOOD MIX! KEEP GOING' : 'NICE BITE! TRY A NEW COLOR');
+        if (!changed) {
+          reactionTitle = C[food.color].label + ' COLLECTED';
+          reactionHint = 'NEXT: TRY A DIFFERENT COLOR';
+        }
       }
       lastColor = food.color;
     } else {
@@ -494,7 +526,7 @@
     if (snake !== player) {
       grow(snake, 2);
       burst(pick.x, pick.y, pick.color, 14, 130);
-      if (snake.type === 'trickster') say('ZIG STOLE A POWER-UP', '#74ff9f');
+      if (snake.type === 'trickster') say('POWER-UP STOLEN', '#ff668d', 1.5, 'negative', 'BEAT ZIG TO THE NEXT ONE');
       return;
     }
     if (pick.type === 'shield') {
@@ -506,7 +538,7 @@
     score += 70;
     ripple(pick.x, pick.y, pick.color, 100);
     burst(pick.x, pick.y, pick.color, 26, 150);
-    say(POWER[pick.type].name + ' ACTIVATED', pick.color);
+    say(POWER[pick.type].name + ' ACTIVATED!', '#d6ff59', 1.65, 'positive', '+70 POINTS · POWER-UP COLLECTED');
     floating(pick.x, pick.y - 20, '+70', pick.color);
     chirp(570, .16, 'triangle', .05, 270);
     refreshHud();
@@ -570,6 +602,7 @@
       if (toastClock <= 0) $('toast').classList.remove('show');
     }
     shake *= Math.max(0, 1 - dt * 8);
+    feedbackTint = Math.max(0, feedbackTint - dt * (feedbackMode === 'negative' ? 1.25 : 1.5));
   }
 
   function collisions() {
@@ -773,8 +806,11 @@
       const taper = Math.min(1, .28 + (b.length - i) / 8);
       const r = 11.3 * taper;
       ctx.fillStyle = i % 4 === 0 ? snake.color : (part.color || snake.color);
-      ctx.shadowColor = snake.color; ctx.shadowBlur = i % 3 === 0 ? 11 : 4;
+      ctx.shadowColor = snake.color; ctx.shadowBlur = i % 3 === 0 ? (snake === player ? 20 : 11) : 4;
       ctx.beginPath(); ctx.arc(part.x, part.y, r, 0, TAU); ctx.fill();
+      if (snake === player) {
+        ctx.lineWidth = 1.8; ctx.strokeStyle = '#f4ffe0'; ctx.shadowBlur = 0; ctx.stroke();
+      }
       if (i % 4 === 1 && i < b.length - 3) {
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#ffffff50';
@@ -782,9 +818,13 @@
       }
     }
     ctx.translate(snake.x, snake.y); ctx.rotate(snake.angle);
-    const headColor = snake.body[0].color || snake.color;
-    ctx.shadowColor = headColor; ctx.shadowBlur = 21;
-    ctx.fillStyle = headColor; ctx.beginPath(); ctx.ellipse(0, 0, 18.5, 14.5, 0, 0, TAU); ctx.fill();
+    const headColor = snake === player ? '#d6ff59' : (snake.body[0].color || snake.color);
+    ctx.shadowColor = headColor; ctx.shadowBlur = snake === player ? 30 : 21;
+    ctx.fillStyle = headColor; ctx.beginPath(); ctx.ellipse(0, 0, snake === player ? 21 : 18.5, snake === player ? 16 : 14.5, 0, 0, TAU); ctx.fill();
+    if (snake === player) {
+      ctx.shadowBlur = 0; ctx.strokeStyle = '#f8ffdd'; ctx.lineWidth = 3.2;
+      ctx.beginPath(); ctx.ellipse(0, 0, 22, 17, 0, 0, TAU); ctx.stroke();
+    }
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#ffffff45';
     ctx.beginPath(); ctx.ellipse(-5, -5, 6, 3.8, -.25, 0, TAU); ctx.fill();
@@ -799,7 +839,25 @@
       ctx.moveTo(-23, 7); ctx.lineTo(-36 - Math.random() * 9, 7); ctx.stroke();
     }
     ctx.restore();
-    if (snake !== player) {
+    if (snake === player) {
+      ctx.save();
+      // Persistent locator distinguishes your snake even after a color reaction.
+      const pulse = 29 + Math.sin(ambientTime * 4) * 2;
+      ctx.strokeStyle = '#d6ff59'; ctx.lineWidth = 2.3; ctx.shadowBlur = 15; ctx.shadowColor = '#d6ff59';
+      ctx.globalAlpha = .66;
+      ctx.beginPath(); ctx.arc(snake.x, snake.y, pulse, 0, TAU); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+      const lx = clamp(snake.x, 38, WORLD.w - 38);
+      const above = snake.y >= 102;
+      const ly = above ? snake.y - 54 : snake.y + 55;
+      ctx.strokeStyle = '#d6ff59b3'; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(snake.x, snake.y + (above ? -23 : 23));
+      ctx.lineTo(lx, ly + (above ? 11 : -11)); ctx.stroke();
+      ctx.fillStyle = '#d6ff59'; ctx.fillRect(lx - 34, ly - 13, 68, 27);
+      ctx.fillStyle = '#0b1420'; ctx.font = 'bold 13px "DM Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('▶ YOU', lx, ly + 1);
+      ctx.restore();
+    } else {
       ctx.save();
       ctx.textAlign = 'center'; ctx.fillStyle = snake.color;
       ctx.font = '10px "DM Mono", monospace';
@@ -830,6 +888,23 @@
     }
   }
 
+  function drawFeedbackFlash() {
+    if (feedbackTint <= 0) return;
+    const t = feedbackTint;
+    const bad = feedbackMode === 'negative';
+    const rgb = bad ? '255,71,100' : '214,255,89';
+    ctx.save();
+    const gradient = ctx.createRadialGradient(WORLD.w * .5, WORLD.h * .5, WORLD.h * .12, WORLD.w * .5, WORLD.h * .5, WORLD.w * .64);
+    gradient.addColorStop(0, 'rgba(' + rgb + ',0)');
+    gradient.addColorStop(1, 'rgba(' + rgb + ',' + (bad ? .43 : .17) * t + ')');
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, WORLD.w, WORLD.h);
+    ctx.strokeStyle = 'rgba(' + rgb + ',' + (bad ? .98 : .73) * t + ')';
+    ctx.lineWidth = bad ? 22 * t : 12 * t;
+    ctx.shadowColor = 'rgb(' + rgb + ')'; ctx.shadowBlur = bad ? 40 * t : 27 * t;
+    ctx.strokeRect(6, 6, WORLD.w - 12, WORLD.h - 12);
+    ctx.restore();
+  }
+
   function render() {
     if (!canvas.width) return;
     ctx.setTransform(canvas.width / WORLD.w, 0, 0, canvas.height / WORLD.h, 0, 0);
@@ -842,6 +917,7 @@
     for (const bot of bots) drawSnake(bot);
     if (player) drawSnake(player);
     drawEffects();
+    drawFeedbackFlash();
     ctx.restore();
   }
 
@@ -852,6 +928,53 @@
     render();
     requestAnimationFrame(loop);
   }
+
+  const stickPad = $('joystickPad');
+  const stickKnob = $('joystickKnob');
+  const stickGroup = $('joystick');
+
+  function resetJoystick() {
+    joystick.pressed = false;
+    joystick.active = false;
+    joystick.pointerId = null;
+    stickKnob.style.transform = 'translate(0px, 0px)';
+    stickGroup.classList.remove('engaged');
+  }
+
+  function steerJoystick(event) {
+    const box = stickPad.getBoundingClientRect();
+    const dx = event.clientX - (box.left + box.width / 2);
+    const dy = event.clientY - (box.top + box.height / 2);
+    const d = len(dx, dy);
+    const max = box.width * .29;
+    const factor = d > max ? max / d : 1;
+    stickKnob.style.transform = 'translate(' + (dx * factor).toFixed(1) + 'px,' + (dy * factor).toFixed(1) + 'px)';
+    if (d >= 7) {
+      joystick.angle = Math.atan2(dy, dx);
+      joystick.active = true;
+    } else joystick.active = false;
+  }
+
+  stickPad.addEventListener('pointerdown', (event) => {
+    if (mode !== 'playing') return;
+    event.preventDefault(); event.stopPropagation();
+    joystick.pressed = true; joystick.pointerId = event.pointerId; joystick.active = false;
+    pointer.active = false;
+    stickGroup.classList.add('engaged');
+    stickPad.setPointerCapture(event.pointerId);
+    steerJoystick(event);
+  });
+  stickPad.addEventListener('pointermove', (event) => {
+    if (joystick.pressed && joystick.pointerId === event.pointerId) {
+      event.preventDefault(); steerJoystick(event);
+    }
+  });
+  function releaseJoystick(event) {
+    if (joystick.pressed && joystick.pointerId === event.pointerId) resetJoystick();
+  }
+  stickPad.addEventListener('pointerup', releaseJoystick);
+  stickPad.addEventListener('pointercancel', releaseJoystick);
+  stickPad.addEventListener('lostpointercapture', releaseJoystick);
 
   function setPointer(event) {
     const box = canvas.getBoundingClientRect();
@@ -874,7 +997,7 @@
     if (e.code === 'Enter' && !e.repeat && (mode === 'menu' || mode === 'over')) reset(true);
   });
   window.addEventListener('keyup', (e) => keys.delete(e.code));
-  window.addEventListener('blur', () => { keys.clear(); boostingTouch = false; if (mode === 'playing') showPause(); });
+  window.addEventListener('blur', () => { keys.clear(); boostingTouch = false; resetJoystick(); if (mode === 'playing') showPause(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'playing') showPause(); });
   $('playButton').addEventListener('click', () => reset(true));
   $('resumeButton').addEventListener('click', showPause);
